@@ -79,7 +79,7 @@ resource "google_cloudfunctions2_function" "scraper" {
   service_config {
     max_instance_count = 1
     available_memory   = "512Mi"
-    timeout_seconds    = 600
+    timeout_seconds    = 3600
     service_account_email = google_service_account.scraper_sa.email
     environment_variables = {
         GCP_PROJECT_ID = var.project_id
@@ -106,7 +106,7 @@ resource "google_cloud_scheduler_job" "scraper_trigger" {
     }
   }
 
-  attempt_deadline = "600s"
+  attempt_deadline = "1800s"
 }
 
 # Grant Invoker Permission

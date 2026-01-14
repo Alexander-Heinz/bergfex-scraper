@@ -142,7 +142,7 @@ def fetch_country_overview(country_name: str, path: str, fetch_details: bool = T
             return entry
 
         # Parallelize fetching
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
             # We use a list to consume the iterator
             results = list(executor.map(fetch_detail_and_merge, entries))
             

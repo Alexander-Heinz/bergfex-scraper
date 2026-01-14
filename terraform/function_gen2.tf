@@ -92,8 +92,8 @@ resource "google_cloudfunctions2_function" "scraper" {
 # Cloud Scheduler
 resource "google_cloud_scheduler_job" "scraper_trigger" {
   name        = "bergfex-scraper-trigger"
-  description = "Triggers the Bergfex scraper daily at 6am and 6pm"
-  schedule    = "0 6,18 * * *"
+  description = "Triggers the Bergfex scraper daily at 6, 7, 8, 9, 12 and 18"
+  schedule    = "0 6,7,8,9,12,18 * * *"
   time_zone   = "Europe/Vienna"
   region      = "europe-west3"
 

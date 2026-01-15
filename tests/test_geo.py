@@ -34,3 +34,33 @@ def test_extract_coords_none():
     html = "<html><body>Just some text</body></html>"
     coords = extract_coords(url, html)
     assert coords is None
+
+
+def test_extract_coords_raw_pattern():
+    """Test extraction of raw lat,lon pattern from HTML."""
+    url = "https://www.bergfex.at/dummy/"
+    html = 'some text 46.894161,11.064692 more text'
+    coords = extract_coords(url, html)
+    assert coords == (46.894161, 11.064692)
+    
+    # With space after comma
+    html_space = 'some text 47.420654, 13.128600 more text'
+    coords = extract_coords(url, html_space)
+    assert coords == (47.420654, 13.128600)
+
+
+def test_extract_coords_integration_real_page():
+    """Integration test: fetch real Bergfex page and extract coords."""
+    import requests
+    
+    url = "https://www.bergfex.at/obergurgl-hochgurgl/"
+    resp = requests.get(url, timeout=30)
+    assert resp.status_code == 200
+    
+    coords = extract_coords(url, resp.text)
+    assert coords is not None, "Should find coords in real Obergurgl page"
+    
+    lat, lon = coords
+    # Obergurgl is approximately at 46.89°N, 11.06°E
+    assert 46.8 < lat < 47.0, f"Latitude {lat} should be near 46.89"
+    assert 10.9 < lon < 11.2, f"Longitude {lon} should be near 11.06"

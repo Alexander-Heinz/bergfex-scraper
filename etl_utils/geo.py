@@ -38,18 +38,22 @@ def extract_coords(url: str, html: str | None = None) -> tuple[float, float] | N
 
 
 def _from_mapstate(url: str) -> tuple[float, float] | None:
-    """Parse coordinates from URL fragment mapstate parameter."""
+    """Parse coordinates from URL fragment or query mapstate parameter."""
     try:
         parsed = urlparse(url)
+        # Check both fragment and query
         fragment = parsed.fragment
+        query = parsed.query
         
-        # Robust handling for #mapstate= vs #?mapstate=
-        # We just look for the substring "mapstate=" and take everything after it
+        target = None
         if "mapstate=" in fragment:
+            target = fragment
+        elif "mapstate=" in query:
+            target = query
+            
+        if target:
             # simple split to handle both cases efficiently
-            value_str = fragment.split("mapstate=")[1]
-            # If there are other params after, we might need more complex parsing, 
-            # but usually mapstate is the main one or we can trust comma separation.
+            value_str = target.split("mapstate=")[1]
             # mapstate value format: lat,lon,zoom,... 
             
             parts = value_str.split(",")
@@ -81,17 +85,16 @@ def _from_html(html: str) -> tuple[float, float] | None:
     
     # Fallback: Look for raw coordinate patterns in HTML
     # Matches patterns like "46.894161,11.064692" or "46.894161, 11.064692"
-    # Limited to European alpine ranges to avoid false positives
-    raw_pattern = r"([4][5-8]\.[0-9]{4,}),\s?([0-9]{1,2}\.[0-9]{4,})"
+    # Relaxed pattern to match more coordinates (e.g. Arrach > 49N, Salamandra > 17E)
+    raw_pattern = r"([0-9]{1,2}\.[0-9]{4,}),\s?([0-9]{1,2}\.[0-9]{4,})"
     
     try:
         match = re.search(raw_pattern, html)
         if match:
             lat = float(match.group(1))
             lon = float(match.group(2))
-            # Sanity check: European ski areas are roughly 5-17°E longitude
-            if 5 <= lon <= 17:
-                return lat, lon
+            # Removed longitude/latitude sanity checks as requested by user
+            return lat, lon
     except (ValueError, IndexError) as e:
         _LOGGER.debug(f"Failed to parse raw coords from HTML: {e}")
         
